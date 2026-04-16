@@ -2,66 +2,29 @@ name: Claude Code PR Review
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main ]       # triggers on PRs to main only
     types: [ opened, synchronize, reopened ]
 
 jobs:
   claude-review:
-    name: Claude Code Automated Review
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # fresh Linux VM for every run
     permissions:
-      contents: read
-      pull-requests: write
-      id-token: write
+      contents: read         # read repo files
+      pull-requests: write   # post review comments on the PR
+      id-token: write        # required by the Claude Code action
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4      # download the code
+      - uses: actions/setup-python@v5  # install Python 3.11
+      - run: pip install pytest
+      - run: PYTHONPATH=. pytest tests/ -v --tb=short
+        # PYTHONPATH=. is critical — without it pytest cannot find grades.py
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install pytest
-
-      - name: Run tests
-        run: PYTHONPATH=. pytest tests/ -v --tb=short
-
-      - name: Claude Code Review
-        uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@v1
+        # @v1 is the stable release — never use @beta (deprecated)
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            Read CLAUDE.md in this repository to understand the project standards.
-            Then review every Python file changed in this pull request.
-
-            Check for the following:
-
-            BLOCKING ISSUES (report clearly if found):
-            - Any function missing type hints
-            - Any function missing a docstring
-            - Any new function with no corresponding test
-            - Any function longer than 20 lines
-
-            WARNINGS (report but do not block):
-            - Magic numbers without named constants
-            - Functions with more than 3 parameters
-
-            Post your review as a comment on this PR with this exact format:
-
-            ## Claude Code Review
-
-            ### BLOCKING ISSUES
-            (list each issue with file, function name, and exact problem — or write "None found")
-
-            ### WARNINGS
-            (list each warning — or write "None found")
-
-            ### SUMMARY
-            APPROVED — all standards met.
-            or
-            CHANGES REQUIRED — N blocking issues found.
+            Read CLAUDE.md and review changed Python files.
+            Flag: missing type hints, docstrings, tests, long functions.
+            Post review as a comment on this PR.
