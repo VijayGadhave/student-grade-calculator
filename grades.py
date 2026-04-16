@@ -1,4 +1,13 @@
-# grades.py — Student Grade Calculator
+# bad_pr_grades.py
+# USE THIS FILE TO SIMULATE THE BAD PR IN PHASE 3 OF THE DEMO
+# Instructions:
+#   git checkout -b feature/add-reporting
+#   copy bad_pr_grades.py grades.py   (Windows)
+#   cp bad_pr_grades.py grades.py     (Mac/Linux)
+#   git add grades.py
+#   git commit -m "feat: add get_top_students and generate_class_report"
+#   git push -u origin feature/add-reporting
+# Then open a PR on GitHub — Claude Code will flag 4 violations.
 
 GRADE_THRESHOLDS = {
     "A": 90,
@@ -17,17 +26,7 @@ GPA_POINTS = {
 
 
 def calculate_letter_grade(score: float) -> str:
-    """Convert a numeric score to a letter grade.
-
-    Args:
-        score: Numeric score between 0 and 100.
-
-    Returns:
-        Letter grade as a string: A, B, C, D, or F.
-
-    Raises:
-        ValueError: If score is outside the range 0 to 100.
-    """
+    """Convert a numeric score to a letter grade."""
     if score < 0 or score > 100:
         raise ValueError(f"Score must be between 0 and 100, got {score}")
     if score >= GRADE_THRESHOLDS["A"]:
@@ -43,56 +42,25 @@ def calculate_letter_grade(score: float) -> str:
 
 
 def calculate_average(scores: list[float]) -> float:
-    """Calculate the average of a list of scores.
-
-    Args:
-        scores: List of numeric scores.
-
-    Returns:
-        Average score as a float.
-
-    Raises:
-        ValueError: If scores list is empty.
-    """
+    """Calculate the average of a list of scores."""
     if not scores:
         raise ValueError("scores list cannot be empty")
     return sum(scores) / len(scores)
 
 
 def calculate_gpa(letter_grades: list[str]) -> float:
-    """Calculate GPA from a list of letter grades.
-
-    Args:
-        letter_grades: List of letter grades (A, B, C, D, or F).
-
-    Returns:
-        GPA as a float rounded to 2 decimal places.
-
-    Raises:
-        ValueError: If letter_grades is empty or contains invalid grades.
-    """
+    """Calculate GPA from a list of letter grades."""
     if not letter_grades:
         raise ValueError("letter_grades list cannot be empty")
     for grade in letter_grades:
         if grade not in GPA_POINTS:
-            raise ValueError(f"Invalid grade '{grade}'. Must be A, B, C, D, or F.")
+            raise ValueError(f"Invalid grade '{grade}'.")
     total_points = sum(GPA_POINTS[grade] for grade in letter_grades)
     return round(total_points / len(letter_grades), 2)
 
 
 def get_student_summary(student_name: str, scores: list[float]) -> str:
-    """Generate a formatted academic summary for a student.
-
-    Args:
-        student_name: Full name of the student.
-        scores: List of numeric scores for the student.
-
-    Returns:
-        A formatted multi-line summary string.
-
-    Raises:
-        ValueError: If scores list is empty or student_name is blank.
-    """
+    """Generate a formatted academic summary for a student."""
     if not student_name.strip():
         raise ValueError("student_name cannot be blank")
     if not scores:
@@ -103,8 +71,50 @@ def get_student_summary(student_name: str, scores: list[float]) -> str:
     return (
         f"Student Report\n"
         f"  Name:    {student_name}\n"
-        f"  Scores:  {scores}\n"
         f"  Average: {average:.1f}\n"
         f"  Grade:   {letter}\n"
         f"  GPA:     {gpa}"
     )
+
+
+# ── VIOLATION 1 & 2: No type hints, no docstring ──────────────────────────
+def get_top_students(students, threshold):
+    results = []
+    for name, scores in students.items():
+        avg = calculate_average(scores)
+        if avg >= threshold:
+            results.append((name, avg))
+    results.sort(key=lambda x: x[1], reverse=True)
+    return results
+
+
+# ── VIOLATION 3: No tests written for either new function ─────────────────
+# ── VIOLATION 4: Function over 20 lines ──────────────────────────────────
+def generate_class_report(class_name: str, students: dict) -> str:
+    """Generate a full class performance report."""
+    if not class_name:
+        raise ValueError("class_name cannot be blank")
+    if not students:
+        raise ValueError("students dict cannot be empty")
+    lines = []
+    lines.append("=" * 50)
+    lines.append(f"CLASS REPORT: {class_name}")
+    lines.append("=" * 50)
+    all_averages = []
+    for student_name, scores in students.items():
+        avg = calculate_average(scores)
+        all_averages.append(avg)
+        grade = calculate_letter_grade(avg)
+        gpa = calculate_gpa([calculate_letter_grade(s) for s in scores])
+        lines.append(f"Student: {student_name}")
+        lines.append(f"  Average: {avg:.1f}")
+        lines.append(f"  Grade:   {grade}")
+        lines.append(f"  GPA:     {gpa}")
+        lines.append("")
+    class_avg = calculate_average(all_averages)
+    class_grade = calculate_letter_grade(class_avg)
+    lines.append("-" * 50)
+    lines.append(f"Class Average: {class_avg:.1f} ({class_grade})")
+    lines.append(f"Total Students: {len(students)}")
+    lines.append("=" * 50)
+    return "\n".join(lines)
