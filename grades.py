@@ -42,6 +42,23 @@ def calculate_letter_grade(score: float) -> str:
         return "F"
 
 
+def is_passing(score: float) -> bool:
+    """Check if a score is passing.
+
+    Args:
+        score: Numeric score between 0 and 100.
+
+    Returns:
+        True if score is 60 or above, False otherwise.
+
+    Raises:
+        ValueError: If score is outside the range 0 to 100.
+    """
+    if score < 0 or score > 100:
+        raise ValueError(f"Score must be between 0 and 100, got {score}")
+    return score >= 60
+
+
 def calculate_average(scores: list[float]) -> float:
     """Calculate the average of a list of scores.
 
