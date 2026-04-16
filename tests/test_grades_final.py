@@ -8,6 +8,7 @@ from grades import (
     calculate_average,
     calculate_gpa,
     get_student_summary,
+    is_passing,
 )
 
 
@@ -77,3 +78,19 @@ def test_get_student_summary_blank_name_raises():
 def test_get_student_summary_empty_scores_raises():
     with pytest.raises(ValueError):
         get_student_summary("Bob", [])
+
+
+# ── is_passing ────────────────────────────────────────────────────────────
+
+def test_is_passing_above_threshold():
+    assert is_passing(75) is True
+
+def test_is_passing_exactly_60():
+    assert is_passing(60) is True
+
+def test_is_passing_below_threshold():
+    assert is_passing(59) is False
+
+def test_is_passing_invalid_score_raises():
+    with pytest.raises(ValueError):
+        is_passing(150)
