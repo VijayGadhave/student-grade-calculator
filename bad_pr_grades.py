@@ -10,7 +10,7 @@
 # Then open a PR on GitHub — Claude Code will flag 4 violations.
 
 GRADE_THRESHOLDS = {
-    "A": 90,
+    "A": 95,
     "B": 80,
     "C": 70,
     "D": 60,
